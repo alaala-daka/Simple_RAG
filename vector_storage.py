@@ -2,13 +2,13 @@ import os
 
 from langchain_chroma import Chroma
 from langchain_community.embeddings import DashScopeEmbeddings
-
+from dotenv import load_dotenv
 from config import Config
 #向量检索功能
 """
     为后续链条chain的构建提供向量检索
 """
-
+load_dotenv()
 class VectorStorage(object):
     def __init__(self, config: Config | None = None) -> None:
         self.database=Chroma(
@@ -22,4 +22,4 @@ class VectorStorage(object):
     def get_retriever(self):
         #提供快速入链的功能
         #由Chroma类型转化为了基于父类runable的子类
-        return self.database.as_retriever(search_kwargs={"k":2})
+        return self.database.as_retriever(search_kwargs={"k":4})

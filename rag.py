@@ -3,15 +3,26 @@ from langchain_deepseek import ChatDeepSeek
 from langchain_core.prompts import ChatPromptTemplate,MessagesPlaceholder  
 from langchain_core.runnables.history import RunnableWithMessageHistory 
 from config import Config
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough,RunnableConfig,RunnableLambda
 from typing import List
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from typing import Sequence,Dict,Any
 from filechathistory import FileChatHistory,get_history,session_set
+from dotenv import load_dotenv
+load_dotenv()
+
 def format_for_retri(dic):
     print(dic)
     return dic["input"]
+
+def format_for_chat_template(dic)->Dict[str,Any]:
+    new_dic={}
+    new_dic["input"]=dic["input"]["input"]
+    new_dic["history"]=dic["input"]["history"]
+    new_dic["guidance"]=dic["guidance"]
+    #print(dic)
+    return new_dic
 class BaseRagService():
     #构建可执行rag_chain
     #实现本地数据与用户输入间的连接
@@ -45,7 +56,7 @@ class BaseRagService():
         chain=(
             {'input':RunnablePassthrough(),
              'guidance':format_for_retri|self.vector_storage|self.format_func
-             }|self.chat_template|self.prompt_show|self.chat_model|StrOutputParser()
+             }|RunnableLambda(format_for_chat_template)|self.chat_template|self.prompt_show|self.chat_model|StrOutputParser()
         )
         mem_func_chain=RunnableWithMessageHistory(
             chain,
@@ -56,6 +67,8 @@ class BaseRagService():
         return mem_func_chain
     
 if __name__=='__main__':
+    config:RunnableConfig={"configurable":{"session_id":"user_0001"}}
     test_obj=BaseRagService()
     chain=test_obj.get_chain()
-    chain.invoke({'input':'告诉我'})
+    res=chain.invoke({'input':'告诉我符号主义是什么？'},config=config)
+    print(res)
