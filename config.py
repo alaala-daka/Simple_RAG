@@ -8,14 +8,17 @@ from pydantic import SecretStr
 #unfinished
 class Config():
     def __init__(self,
+                SESSION_ID:str=os.getenv("SESSION_ID",''),
                 MODEL_API_KEY:str=os.getenv("MODEL_API_KEY",''),
                 CHROMA_PATH:str=os.getenv("CHROMA_PATH",''),
                 SPLIT_SEPA:list[str] | None=None ,
                 PERSIST_DIRE:str=os.getenv("PERSIST_DIRECTORY",''),
+                MD5_PATH:str=os.getenv("MD5_TXT",''),
                 **kwargs
                 ) -> None:
+        self.session_id=SESSION_ID
         self.model_api_key=MODEL_API_KEY
-        self.get_chroma_path=CHROMA_PATH
+        self.chroma_path=CHROMA_PATH
         self.split_separators: list[str] | None = SPLIT_SEPA
         self.persist_directory=PERSIST_DIRE
         self.llm_model=kwargs.get("LLM_MODEL") or os.getenv("LLM_MODEL")
@@ -23,6 +26,7 @@ class Config():
             name=self.recognize_chat_model(),
             api_key=SecretStr(self.model_api_key),
         )
+        self.md5_path=MD5_PATH
     def recognize_chat_model(self):
         """根据 API Key 格式自动识别厂商并返回主流对话模型"""
         key = self.model_api_key
@@ -55,3 +59,7 @@ class Config():
             return "deepseek-v4-flash"
 
         return None
+    def get_session_config(self):
+        return {
+            "configurable":{'session_id':self.session_id}
+        }

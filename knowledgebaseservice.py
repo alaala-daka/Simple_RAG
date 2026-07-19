@@ -8,21 +8,21 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 import datetime
 from config import Config
 
-def check_md5(md5_str:str,encoding:str='utf-8'):
-    if not os.path.exists(os.getenv("MD5_TXT", "")):
-        with open(os.getenv("MD5_TXT",''),'w',encoding=encoding) as f:
+def check_md5(md5_str:str,config:Config=Config(),encoding:str='utf-8'):
+    if not os.path.exists(config.md5_path):
+        with open(config.md5_path,'w',encoding=encoding) as f:
             return False
     else:
-        with open(os.getenv("MD5_TXT",''),'r',encoding=encoding) as f:
+        with open(config.md5_path,'r',encoding=encoding) as f:
             md5_str=md5_str.strip()
             for line in f.readlines():
                 if md5_str==line:
                     return True
             else:
                 return False    
-def save_md5(md5_str:str,encoding:str='utf-8'):
+def save_md5(md5_str:str,config:Config=Config(),encoding:str='utf-8'):
     #不检测md5_str是否已经被储存过，提高程序效率，灵活性和模块化特点
-    with open(os.getenv("MD5_TXT",''),'a',encoding=encoding) as f:
+    with open(config.md5_path,'a',encoding=encoding) as f:
         f.write(md5_str+'\n')
     return
 def trans_md5(string:str,encoding:str='utf-8'):
@@ -33,8 +33,9 @@ def trans_md5(string:str,encoding:str='utf-8'):
     return encoder.hexdigest()
 
 class KnowledgeBaseService(object):
-    def __init__(self,config:Config | None=None) -> None:
-        path = config.get_chroma_path if config is not None else os.getenv("CHROMA_PATH", "")
+    def __init__(self,config:Config=Config()) -> None:
+        self.config=config
+        path = config.chroma_path if config is not None else os.getenv("CHROMA_PATH", "")
         if not path:
             raise ValueError("你必须给定KnowledgeBaseService一个指定地址（设置 CHROMA_PATH 环境变量或传入 Config）")
         os.makedirs(path, exist_ok=True)
@@ -43,17 +44,17 @@ class KnowledgeBaseService(object):
             embedding_function=DashScopeEmbeddings(model="text-embedding-v4"),
             persist_directory=config.persist_directory if config is not None else os.getenv("PERSIST_DIRECTORY",'') )
         self.split=RecursiveCharacterTextSplitter(
-            chunk_size=40,
-            chunk_overlap=10,
+            chunk_size=55,
+            chunk_overlap=20,
             separators=config.split_separators if config is not None else None,
             length_function=len,
         )
     def up_load_by_str(self,string:str,file_name:str,encoding:str='utf-8'):
         tran_string=trans_md5(string)
-        if check_md5(tran_string):
+        if check_md5(tran_string,self.config):
             #已储存该字符串
             return("[该字符串已储存]")
-            
+        save_md5(tran_string,self.config)    
         if len(string) < 50:
             storage_list=[string]
         else:
