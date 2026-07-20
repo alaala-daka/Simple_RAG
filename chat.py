@@ -26,6 +26,15 @@ st.markdown("""
         background: #f5f5f5;
         border-right: 1px solid #e0e0e0;
     }
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] .stCaption,
+    [data-testid="stSidebar"] .stMarkdown {
+        color: #000000 !important;
+    }
 
     /* Sidebar buttons — dark, high contrast against light gray bg */
     [data-testid="stSidebar"] .stButton > button {
