@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-
+from langchain_deepseek import ChatDeepSeek
 import re
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
@@ -9,7 +9,7 @@ from pydantic import SecretStr
 class Config():
     def __init__(self,
                 SESSION_ID:str=os.getenv("SESSION_ID",''),
-                MODEL_API_KEY:str=os.getenv("MODEL_API_KEY",''),
+                MODEL_API_KEY:str=os.getenv("DEEPSEEK_API_KEY",''),
                 CHROMA_PATH:str=os.getenv("CHROMA_PATH",''),
                 SPLIT_SEPA:list[str] | None=None ,
                 PERSIST_DIRE:str=os.getenv("PERSIST_DIRECTORY",''),
@@ -22,8 +22,8 @@ class Config():
         self.split_separators: list[str] | None = SPLIT_SEPA
         self.persist_directory=PERSIST_DIRE
         self.llm_model=kwargs.get("LLM_MODEL") or os.getenv("LLM_MODEL")
-        self.chat_model=ChatOpenAI(
-            name=self.recognize_chat_model(),
+        self.chat_model=ChatDeepSeek(
+            model='deepseek-v4-flash',
             api_key=SecretStr(self.model_api_key),
         )
         self.md5_path=MD5_PATH

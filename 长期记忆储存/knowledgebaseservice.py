@@ -22,9 +22,7 @@ def check_md5(md5_str:str,config:Config|None=None,encoding:str='utf-8'):
                     return True
             else:
                 return False    
-def save_md5(md5_str:str,config:Config|None=None,encoding:str='utf-8'):
-    if config is None:
-        config = Config()
+def save_md5(md5_str:str,config:Config=Config(),encoding:str='utf-8'):
     #不检测md5_str是否已经被储存过，提高程序效率，灵活性和模块化特点
     with open(config.md5_path,'a',encoding=encoding) as f:
         f.write(md5_str+'\n')
@@ -37,9 +35,7 @@ def trans_md5(string:str,encoding:str='utf-8'):
     return encoder.hexdigest()
 
 class KnowledgeBaseService(object):
-    def __init__(self,config:Config|None=None) -> None:
-        if config is None:
-            config = Config()
+    def __init__(self,config:Config=Config()) -> None:
         self.config=config
         path = config.chroma_path if config is not None else os.getenv("CHROMA_PATH", "")
         if not path:
